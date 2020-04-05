@@ -17,7 +17,8 @@ export default Register;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F6D0',
+    backgroundColor: '#425c5a',
+
     padding: 40,
   },
 });

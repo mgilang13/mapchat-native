@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
-import {View, TextInput, StyleSheet, AsyncStorage} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import {View, TextInput, StyleSheet, AsyncStorage, Image} from 'react-native';
 import firebase from '../../Config/FirebaseConfig';
 import {toastr} from '../../Helpers/Helpers';
+import Logo from '../../../assets/images/logo.png';
+import StatusBar from '../GeneralStatusBar/GeneralStatusBar';
 
 import RadioForm, {
   RadioButton,
@@ -29,6 +32,13 @@ class RegisterForm extends Component {
     const {fullname, email, password, phone, gender} = this.state;
     let error = false;
     try {
+      let data = {
+        email: email,
+        friendList: '',
+        fullname: fullname,
+        gender: gender,
+        phone: phone,
+      };
       if (fullname.trim() === '') {
         error = true;
         throw new Error('Fullname is Required.');
@@ -38,17 +48,13 @@ class RegisterForm extends Component {
         .auth()
         .createUserWithEmailAndPassword(email, password);
 
-      firebase
-        .database()
-        .ref('users')
-        .child(response.user.uid)
-        .set({
-          uid: response.user.uid,
-          email,
-          fullname,
-          phone,
-          gender,
-        });
+      firebase.database().ref('users').child(response.user.uid).set({
+        uid: response.user.uid,
+        email,
+        fullname,
+        phone,
+        gender,
+      });
 
       AsyncStorage.setItem('userToken', response.user.id);
       this.props.dataNavigation.navigate('Login');
@@ -57,34 +63,59 @@ class RegisterForm extends Component {
       toastr(error.message, 'danger');
     }
   };
+
+  backBtn = () => {
+    this.props.dataNavigation.navigate('Login');
+  };
   render() {
     const {email, password, fullname, phone, gender} = this.state;
-    console.log('hai', this.state);
     return (
       <View style={styles.mainContainer}>
-        <View style={styles.titleContainer}>
-          <Text style={styles.txtTitle}>Find your friends now!</Text>
+        <StatusBar
+          backgroundColor="#425c5a"
+          barStyle="light-content"></StatusBar>
+        <Icon
+          onPress={this.backBtn}
+          name="arrow-left"
+          size={20}
+          style={{position: 'absolute', color: '#ffcda3'}}
+        />
+        <View style={styles.logoContainer}>
+          <Image style={styles.logoImage} source={Logo} />
         </View>
 
         <View style={styles.formContainer}>
-          <TextInput
-            style={styles.inputData}
-            placeholder="Email"
-            onChangeText={e => {
-              this.setState({email: e});
-            }}></TextInput>
-          <TextInput
-            style={styles.inputData}
-            placeholder="Full Name"
-            onChangeText={e => {
-              this.setState({fullname: e});
-            }}></TextInput>
-          <TextInput
-            style={styles.inputData}
-            placeholder="Phone Number"
-            onChangeText={e => {
-              this.setState({phone: e});
-            }}></TextInput>
+          <View style={styles.fieldContainer}>
+            <Text style={styles.iconContainer}>@</Text>
+            <TextInput
+              placeholderTextColor="#a8b8b7ff"
+              style={styles.inputData}
+              placeholder="Email"
+              onChangeText={(e) => {
+                this.setState({email: e});
+              }}></TextInput>
+          </View>
+          <View style={styles.fieldContainer}>
+            <Icon style={styles.iconContainer} size={17} name="user-circle" />
+            <TextInput
+              placeholderTextColor="#a8b8b7ff"
+              style={styles.inputData}
+              placeholder="Full Name"
+              onChangeText={(e) => {
+                this.setState({fullname: e});
+              }}></TextInput>
+          </View>
+          <View style={styles.fieldContainer}>
+            <Icon style={styles.iconContainer} size={17} name="mobile-alt" />
+            <TextInput
+              keyboardType="number-pad"
+              placeholderTextColor="#a8b8b7ff"
+              style={styles.inputData}
+              placeholder="Phone Number"
+              onChangeText={(e) => {
+                this.setState({phone: e});
+              }}></TextInput>
+          </View>
           <View style={styles.genderContainer}>
             <Text style={styles.genderTitle}>Gender :</Text>
 
@@ -95,15 +126,15 @@ class RegisterForm extends Component {
                     obj={obj}
                     index={i}
                     isSelected={this.state.gender === i}
-                    onPress={gender => {
+                    onPress={(gender) => {
                       this.setState({
                         gender: gender,
                       });
                     }}
                     borderWidth={2}
-                    buttonInnerColor={'#71697A'}
+                    buttonInnerColor={'#a8b8b7ff'}
                     buttonOuterColor={
-                      this.state.gender === i ? '#71697A' : '#71697A'
+                      this.state.gender === i ? '#a8b8b7ff' : '#a8b8b7ff'
                     }
                     buttonSize={17}
                     buttonOuterSize={19}
@@ -114,14 +145,14 @@ class RegisterForm extends Component {
                     obj={obj}
                     index={i}
                     labelHorizontal={true}
-                    onPress={gender => {
+                    onPress={(gender) => {
                       this.setState({
                         gender: gender,
                       });
                     }}
                     labelStyle={{
                       fontSize: 16,
-                      color: '#71697A',
+                      color: '#a8b8b7ff',
                       marginRight: 20,
                     }}
                     labelWrapStyle={{}}
@@ -130,15 +161,19 @@ class RegisterForm extends Component {
               ))}
             </RadioForm>
           </View>
-          <TextInput
-            style={styles.inputData}
-            placeholder="Password"
-            secureTextEntry={true}
-            onChangeText={e => {
-              this.setState({password: e});
-            }}></TextInput>
+          <View style={styles.fieldContainer}>
+            <Icon style={styles.iconContainer} size={17} name="lock" />
+            <TextInput
+              placeholderTextColor="#a8b8b7"
+              style={styles.inputData}
+              placeholder="Password"
+              secureTextEntry={true}
+              onChangeText={(e) => {
+                this.setState({password: e});
+              }}></TextInput>
+          </View>
         </View>
-        <View>
+        <View style={{flex: 1, alignItems: 'center'}}>
           <Button
             style={styles.submitBtn}
             rounded
@@ -154,35 +189,58 @@ class RegisterForm extends Component {
 export default RegisterForm;
 
 const styles = StyleSheet.create({
-  mainContainer: {},
-  txtTitle: {
-    fontSize: 21,
-    color: '#71697A',
-    fontWeight: 'bold',
+  mainContainer: {flex: 1, backgroundColor: '#425c5a'},
+  logoContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
-  formContainer: {
-    marginTop: 40,
+  logoImage: {width: 100, height: 100},
+  formContainer: {},
+  fieldContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  iconContainer: {
+    marginTop: 30,
+    color: '#ffcda3',
+    paddingRight: 10,
+    paddingLeft: 10,
+    height: 35,
+    borderRightWidth: 2,
+    borderRightColor: '#a0947f',
+    borderBottomWidth: 2,
+    borderBottomColor: '#a0947f',
   },
   inputData: {
+    paddingLeft: 10,
+    flex: 1,
+    maxWidth: '100%',
     marginTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#B5B5C9',
+    borderBottomWidth: 2,
+    borderBottomColor: '#a0947f',
+    color: '#a8b8b7',
+    fontFamily: 'AirbnbCerealBook',
   },
   // Gender Radio Button
   genderContainer: {
     marginTop: 20,
+    marginLeft: 40,
   },
   genderTitle: {
     marginBottom: 20,
-    color: '#71697A',
+    color: '#a8b8b7ff',
   },
   submitBtn: {
+    width: 200,
     marginTop: 50,
-    backgroundColor: '#71697A',
-    alignContent: 'center',
+    backgroundColor: '#ffcda3',
+    justifyContent: 'center',
   },
   txtSubmit: {
+    color: '#425c5a',
     fontSize: 18,
-    marginLeft: 100,
+    fontFamily: 'AirbnbCerealBook',
+    textTransform: 'capitalize',
+    fontWeight: 'bold',
   },
 });
